@@ -59,38 +59,209 @@
             <button class="subject-btn" data-subject="Biochemistry">Biochemistry <span class="subject-count" id="countBiochemistry">0</span></button>
             <button class="subject-btn" data-subject="Pathology">Pathology <span class="subject-count" id="countPathology">0</span></button>
             <button class="subject-btn" data-subject="Parasitology">Parasitology <span class="subject-count" id="countParasitology">0</span></button>
-            <button class="subject-btn" data-subject="Pharmacology">Pharmacology <span class="subject-count" id="countPharmacology">0
-                <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+            <button class="subject-btn" data-subject="Pharmacology">Pharmacology <span class="subject-count" id="countPharmacology">0</span></button>
+            <button class="subject-btn" data-subject="Microbiology">Microbiology <span class="subject-count" id="countMicrobiology">0</span></button>
+        </div>
 
-<div class="question-nav" id="questionNav"></div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
 
-<div class="question-scroll">
-    <div class="question-number" id="questionNumber"></div>
-    <div class="question-text" id="questionText"></div>
-    <div class="options-list" id="optionsList"></div>
-    <div class="question-meta" id="questionMeta"></div>
-</div>
+        <div class="question-nav" id="questionNav"></div>
 
-<div class="feedback-box" id="feedbackBox"></div>
+        <div class="question-scroll">
+            <div class="question-number" id="questionNumber"></div>
+            <div class="question-text" id="questionText"></div>
+            <div class="options-list" id="optionsList"></div>
+            <div class="question-meta" id="questionMeta"></div>
+        </div>
 
-<div class="controls">
-    <div class="btn-group">
-        <button class="btn btn-outline" id="prevBtn">← Prev</button>
-        <button class="btn btn-outline" id="resetBtn">Reset</button>
+        <div class="feedback-box" id="feedbackBox"></div>
+
+        <div class="controls">
+            <div class="btn-group">
+                <button class="btn btn-outline" id="prevBtn">← Prev</button>
+                <button class="btn btn-outline" id="resetBtn">Reset</button>
+            </div>
+            <button class="btn btn-primary" id="nextBtn">Next →</button>
+        </div>
+
+        <div class="stats">
+            <span>✅ Correct: <span class="num" id="correctCount">0</span></span>
+            <span>❌ Wrong: <span class="num" id="wrongCount">0</span></span>
+        </div>
+
+        <div class="end-screen" id="endScreen"></div>
+
     </div>
-    <button class="btn btn-primary" id="nextBtn">Next →</button>
-</div>
-
-<div class="stats">
-    <span>✅ Correct: <span class="num" id="correctCount">0</span></span>
-    <span>❌ Wrong: <span class="num" id="wrongCount">0</span></span>
-</div>
-
-<div class="end-screen" id="endScreen"></div>
-    </div> <!-- /.quiz-container -->
 
     <script src="questions.js"></script>
     <script src="theme.js"></script>
-    <script src="app.js"></script>
+
+    <script>
+    // ─── Quiz engine (this replaces the "app.js" we talked about) ───
+    (function () {
+        let currentSubject = 'all';
+        let currentIndex = 0;
+        let filtered = [];
+        let answers = {};
+
+        const $ = s => document.querySelector(s);
+        const $$ = s => document.querySelectorAll(s);
+        const LETTERS = 'ABCDEFGH';
+
+        function paintCounts() {
+            const c = { all: QUESTION_BANK.length };
+            QUESTION_BANK.forEach(q => c[q.subject] = (c[q.subject] || 0) + 1);
+            const map = {
+                countAll:'all', countAnatomy:'Anatomy', countPhysiology:'Physiology',
+                countHistology:'Histology', countBiochemistry:'Biochemistry',
+                countPathology:'Pathology', countParasitology:'Parasitology',
+                countPharmacology:'Pharmacology', countMicrobiology:'Microbiology'
+            };
+            for (const [id, s] of Object.entries(map)) {
+                const el = document.getElementById(id);
+                if (el) el.textContent = c[s] || 0;
+            }
+        }
+
+        function buildFiltered() {
+            filtered = currentSubject === 'all'
+                ? QUESTION_BANK.slice()
+                : QUESTION_BANK.filter(q => q.subject === currentSubject);
+        }
+
+        function renderNav() {
+            const nav = $('#questionNav');
+            nav.innerHTML = '';
+            filtered.forEach((q, i) => {
+                const b = document.createElement('button');
+                b.className = 'qnav-btn';
+                b.textContent = i + 1;
+                if (i === currentIndex) b.classList.add('active');
+                if (answers[q.id] !== undefined) {
+                    b.classList.add(answers[q.id] === q.answer ? 'answered-correct' : 'answered-wrong');
+                }
+                b.onclick = () => { currentIndex = i; renderQuestion(); renderNav(); };
+                nav.appendChild(b);
+            });
+        }
+
+        function renderQuestion() {
+            const q = filtered[currentIndex];
+            if (!q) return;
+
+            $('#qCounter').textContent = currentIndex + 1;
+            $('#totalQ').textContent = filtered.length;
+            $('#questionNumber').textContent = `Question ${currentIndex + 1} of ${filtered.length}`;
+            $('#questionText').textContent = q.text;
+            $('#questionMeta').textContent = q.meta ? `Source: ${q.meta}` : '';
+
+            const list = $('#optionsList');
+            list.innerHTML = '';
+            const chosen = answers[q.id];
+            const answered = chosen !== undefined;
+
+            q.options.forEach((opt, i) => {
+                const item = document.createElement('div');
+                item.className = 'option-item';
+                if (answered) {
+                    item.classList.add('disabled');
+                    if (i === q.answer) item.classList.add('correct-reveal');
+                    if (i === chosen && chosen !== q.answer) item.classList.add('wrong-reveal');
+                }
+                item.innerHTML = `<div class="option-letter">${LETTERS[i]}</div>
+                                  <div class="option-text">${opt}</div>`;
+                item.onclick = () => choose(i);
+                list.appendChild(item);
+            });
+
+            const fb = $('#feedbackBox');
+            if (answered) {
+                const ok = chosen === q.answer;
+                fb.className = 'feedback-box show ' + (ok ? 'correct' : 'wrong');
+                fb.innerHTML = `<span class="fb-label">${ok ? '✅ Correct' : '❌ Incorrect'}</span>
+                                <div>Correct answer: <strong>${LETTERS[q.answer]}. ${q.options[q.answer]}</strong></div>`;
+            } else {
+                fb.className = 'feedback-box';
+                fb.innerHTML = '';
+            }
+
+            const done = filtered.filter(x => answers[x.id] !== undefined).length;
+            $('#progressFill').style.width = (done / filtered.length * 100) + '%';
+
+            let correct = 0, wrong = 0;
+            filtered.forEach(x => {
+                if (answers[x.id] !== undefined) {
+                    answers[x.id] === x.answer ? correct++ : wrong++;
+                }
+            });
+            $('#correctCount').textContent = correct;
+            $('#wrongCount').textContent = wrong;
+        }
+
+        function choose(i) {
+            const q = filtered[currentIndex];
+            if (answers[q.id] !== undefined) return;
+            answers[q.id] = i;
+            renderQuestion();
+            renderNav();
+        }
+
+        function next() {
+            if (currentIndex < filtered.length - 1) {
+                currentIndex++; renderQuestion(); renderNav();
+            } else showEnd();
+        }
+        function prev() {
+            if (currentIndex > 0) { currentIndex--; renderQuestion(); renderNav(); }
+        }
+        function reset() {
+            answers = {}; currentIndex = 0;
+            const s = $('#endScreen'); s.classList.remove('show'); s.innerHTML = '';
+            renderQuestion(); renderNav();
+        }
+        function showEnd() {
+            let correct = 0;
+            filtered.forEach(x => { if (answers[x.id] === x.answer) correct++; });
+            const total = filtered.length;
+            const pct = Math.round(correct / total * 100);
+            const screen = $('#endScreen');
+            screen.classList.add('show');
+            screen.innerHTML = `
+                <div class="big-icon">🎉</div>
+                <h2>Quiz Complete</h2>
+                <div class="score-display">${pct}%</div>
+                <div class="sub-text">You scored ${correct} out of ${total}</div>
+                <button class="btn btn-primary" id="restartBtn">Restart</button>`;
+            $('#restartBtn').onclick = reset;
+        }
+
+        function init() {
+            paintCounts();
+            buildFiltered();
+            $('#totalQ').textContent = filtered.length;
+
+            $$('.subject-btn').forEach(btn => {
+                btn.onclick = () => {
+                    $$('.subject-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentSubject = btn.dataset.subject;
+                    buildFiltered();
+                    currentIndex = 0;
+                    renderQuestion();
+                    renderNav();
+                };
+            });
+
+            $('#nextBtn').onclick = next;
+            $('#prevBtn').onclick = prev;
+            $('#resetBtn').onclick = reset;
+
+            renderQuestion();
+            renderNav();
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    })();
+    </script>
 </body>
 </html>
