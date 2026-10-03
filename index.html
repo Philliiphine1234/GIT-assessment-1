@@ -60,6 +60,33 @@
             <button class="subject-btn" data-subject="Pathology">Pathology <span class="subject-count" id="countPathology">0</span></button>
             <button class="subject-btn" data-subject="Parasitology">Parasitology <span class="subject-count" id="countParasitology">0</span></button>
             <button class="subject-btn" data-subject="Pharmacology">Pharmacology <span class="subject-count" id="countPharmacology">0
+                <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+<div class="question-nav" id="questionNav"></div>
+
+<div class="question-scroll">
+    <div class="question-number" id="questionNumber"></div>
+    <div class="question-text" id="questionText"></div>
+    <div class="options-list" id="optionsList"></div>
+    <div class="question-meta" id="questionMeta"></div>
+</div>
+
+<div class="feedback-box" id="feedbackBox"></div>
+
+<div class="controls">
+    <div class="btn-group">
+        <button class="btn btn-outline" id="prevBtn">← Prev</button>
+        <button class="btn btn-outline" id="resetBtn">Reset</button>
+    </div>
+    <button class="btn btn-primary" id="nextBtn">Next →</button>
+</div>
+
+<div class="stats">
+    <span>✅ Correct: <span class="num" id="correctCount">0</span></span>
+    <span>❌ Wrong: <span class="num" id="wrongCount">0</span></span>
+</div>
+
+<div class="end-screen" id="endScreen"></div>
     </div> <!-- /.quiz-container -->
 
     <script src="questions.js"></script>
