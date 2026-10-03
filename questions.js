@@ -133,6 +133,7 @@ const QUESTION_BANK = [
     { id: 127, subject: 'Histology', text: 'Which of the following histological features is characteristic of the gastric mucosa of the fundus and body?', options: ["Numerous Brunner's glands", 'Numerous goblet cells', 'Numerous mucous neck cells', 'Numerous Paneth cells', 'Numerous intestinal crypts'], answer: 2, meta: 'Assessment 2020' },
     { id: 128, subject: 'Histology', text: 'A patient with vitamin B12 deficiency is found to have impaired gastric acid secretion due to dysfunction of gastric parietal cells. Which specialized structure is present within these cells and is involved in HCl secretion?', options: ['Zymogen granules', 'Intracellular canaliculi', 'Goblet cell granules', 'Secretory vesicles', 'Mucous neck cells'], answer: 1, meta: 'Assessment 2020' },
     { id: 129, subject: 'Histology', text: 'Which structural feature is prominently seen in an active, acid-secreting gastric parietal cell?', options: ['Abundant apical zymogen granules', 'Dense core neurosecretory granules', 'Mucus-filled apical droplets', 'Basal striations with interdigitating mitochondria', 'Extensive intracellular canaliculi lined with microvilli'], answer: 4, meta: 'Assessment GIT1' },
+    ];
 QUESTION_BANK.push(
     // ─── BIOCHEMISTRY ──────────────────────────────────────────────
     { id: 130, subject: 'Biochemistry', text: 'Which nutritional deficiency disorder is characteristically associated with edema?', options: ['Marasmus', 'Beriberi', 'Pellagra', 'Kwashiorkor', 'Scurvy'], answer: 3, meta: 'Assessment GIT0' },
